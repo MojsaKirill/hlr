@@ -127,4 +127,4 @@ class RequestView(LoginRequiredMixin, View):
     def get(self, request, id):
         user = request.user
         return render(request, self.result_template,
-                      {"result": Request.objects.filter(requests_id=id).all(), "user_b": user.balance, "r_id": id})
+                      {"result": Request.objects.filter(requests_id=id).all().reverse(), "user_b": user.balance, "r_id": id})
