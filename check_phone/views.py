@@ -1,6 +1,7 @@
 # Create your views here.
 import codecs
 import csv
+import threading
 import time
 
 from django.contrib.auth import login
@@ -12,6 +13,7 @@ from django.views import View
 
 import check_phone.hlr_api as hlr
 from check_phone.file_reader import get_values
+from check_phone.hlr_theard import worker
 from check_phone.models import Request, Requests, TempRequest, Price, User
 
 
@@ -67,31 +69,10 @@ class AcceptView(LoginRequiredMixin, View):
         user_id = request.user.id
         requests = Requests.objects.create(user_id=user_id)
         for phone in phones:
-            r = Request.objects.filter(phone=phone).first()
-            if r is None:
-                hlr_server_id = hlr.send_hlr(phone)
-                if hlr_server_id is not None:
-                    hlr_results.append(HLRRes(phone=phone, server_id=hlr.send_hlr(phone)))
-            else:
-                hlr_results.append(HLRRes(phone=r.phone, status_code=r.hlr_status_code, status=r.hlr_status))
-        time.sleep(10)
-        for hlr_res in hlr_results:
-            if hlr_res.server_id is not None:
-                hlr_res.status_code = hlr.get_hlr_result(hlr_res.server_id)
-            if hlr_res.status_code is None:
-                    hlr_res.status = 'Ошибка сервера'
-            if hlr_res.status_code == -2:
-                hlr_res.status = 'Неправильный номер'
-            if hlr_res.status_code == -1:
-                hlr_res.status = 'Номер не обсуживается'
-            if hlr_res.status_code == -0:
-                hlr_res.status = 'Запрос принят'
-            if hlr_res.status_code == 1:
-                hlr_res.status = 'Запрос передан оператору'
-            if hlr_res.status_code == 2:
-                hlr_res.status = 'Номер обсуживается'
-            Request.objects.create(requests_id=requests.id, phone=hlr_res.phone, hlr_status=hlr_res.status,
-                                   hlr_status_code=hlr_res.status_code)
+            Request.objects.create(requests_id=requests.id, phone=phone, hlr_status="Обрабатывается",
+                                   hlr_status_code=None)
+        t = threading.Thread(target=worker, args=(requests.id, ))
+        t.start()
         return render(request, self.result_template,
                       {"result": hlr_results, "user_b": user.balance, "r_id": requests.id})
 
