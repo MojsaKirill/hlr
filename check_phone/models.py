@@ -23,7 +23,7 @@ class Request(models.Model):
     requests_id = models.IntegerField()
     phone = models.IntegerField()
     hlr_status = models.CharField(max_length=100)
-    hlr_status_code = models.IntegerField()
+    hlr_status_code = models.IntegerField(null=True, blank=True)
 
 
 class TempRequest(models.Model):
