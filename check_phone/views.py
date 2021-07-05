@@ -59,7 +59,7 @@ class AcceptView(LoginRequiredMixin, View):
         user = request.user
         temp_req = TempRequest.objects.get(id=id)
         if user.balance < temp_req.price:
-            return render(request, self.error_template)
+            return render(request, self.error_template, {"user_b": user.balance})
         user.balance = user.balance - temp_req.price
         User.objects.filter(id=user.id).update(balance=user.balance)
         phones = temp_req.get_phones()
