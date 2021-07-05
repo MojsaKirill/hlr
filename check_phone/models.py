@@ -1,5 +1,4 @@
 import json
-import uuid
 from datetime import datetime
 
 from django.contrib.auth.models import AbstractUser
@@ -21,7 +20,6 @@ class Requests(models.Model):
 
 
 class Request(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     requests_id = models.IntegerField()
     phone = models.IntegerField()
     hlr_status = models.CharField(max_length=100)
