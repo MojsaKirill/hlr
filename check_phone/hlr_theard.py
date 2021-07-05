@@ -22,7 +22,7 @@ def worker(requests_id):
                     status = 'Запрос передан оператору'
                 if status_code == 2:
                     status = 'Номер обсуживается'
-                Requests.objects.filter(id=req.id).update(hlr_status=status, hlr_status_code=status_code)
+                Request.objects.filter(id=req.id).update(hlr_status=status, hlr_status_code=status_code)
             else:
                 Request.objects.filter(id=req.id).update(hlr_status="Ошибка")
         else:
