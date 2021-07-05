@@ -54,7 +54,7 @@ class PhoneView(LoginRequiredMixin, View):
 class AcceptView(LoginRequiredMixin, View):
     login_url = '/login'
     index_template = 'index.html'
-    result_template = 'result.html'
+    result_template = 'request.html'
     error_template = 'balance_error.html'
 
     def get(self, request, id):
@@ -65,7 +65,6 @@ class AcceptView(LoginRequiredMixin, View):
         user.balance = user.balance - temp_req.price
         User.objects.filter(id=user.id).update(balance=user.balance)
         phones = temp_req.get_phones()
-        hlr_results = []
         user_id = request.user.id
         requests = Requests.objects.create(user_id=user_id)
         for phone in phones:
@@ -73,8 +72,7 @@ class AcceptView(LoginRequiredMixin, View):
                                    hlr_status_code=5)
         t = threading.Thread(target=worker, args=(requests.id, ))
         t.start()
-        return render(request, self.result_template,
-                      {"result": hlr_results, "user_b": user.balance, "r_id": requests.id})
+        return redirect(f'/request/{requests.id}')
 
 
 class DeniedView(LoginRequiredMixin, View):
