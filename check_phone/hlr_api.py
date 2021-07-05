@@ -28,7 +28,7 @@ def get_hlr_result(server_id):
         j = json.loads(urllib.request.urlopen(url).read())
         count = 0
         while j.get('check') is None or j.get('check')[0] is None or j.get('check')[0].get('status') is None\
-                or j.get('check')[0].get('status') == 0 or j.get('check')[0].get('status') == 1 and count < 20:
+                or int(j['check'][0]['status']) == 0 or int(j['check'][0]['status']) == 1 and count < 20:
             time.sleep(3)
             j = json.loads(urllib.request.urlopen(url).read())
             count = count + 1
