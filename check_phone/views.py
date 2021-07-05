@@ -53,12 +53,13 @@ class AcceptView(LoginRequiredMixin, View):
     login_url = '/login'
     index_template = 'index.html'
     result_template = 'result.html'
+    error_template = 'balance_error.html'
 
     def get(self, request, id):
         user = request.user
         temp_req = TempRequest.objects.get(id=id)
         if user.balance < temp_req.price:
-            return
+            return render(request, self.error_template)
         user.balance = user.balance - temp_req.price
         User.objects.filter(id=user.id).update(balance=user.balance)
         phones = temp_req.get_phones()
@@ -68,13 +69,17 @@ class AcceptView(LoginRequiredMixin, View):
         for phone in phones:
             r = Request.objects.filter(phone=phone).first()
             if r is None:
-                hlr_results.append(HLRRes(phone=phone, server_id=hlr.send_hlr(phone)))
+                hlr_server_id = hlr.send_hlr(phone)
+                if hlr_server_id is not None:
+                    hlr_results.append(HLRRes(phone=phone, server_id=hlr.send_hlr(phone)))
             else:
                 hlr_results.append(HLRRes(phone=r.phone, status_code=r.hlr_status_code, status=r.hlr_status))
         time.sleep(10)
         for hlr_res in hlr_results:
             if hlr_res.server_id is not None:
                 hlr_res.status_code = hlr.get_hlr_result(hlr_res.server_id)
+            if hlr_res.status_code is None:
+                    hlr_res.status = 'Ошибка сервера'
             if hlr_res.status_code == -2:
                 hlr_res.status = 'Неправильный номер'
             if hlr_res.status_code == -1:
