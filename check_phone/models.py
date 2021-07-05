@@ -20,7 +20,6 @@ class Requests(models.Model):
 
 
 class Request(models.Model):
-    id = models.BigIntegerField(primary_key=True)
     requests_id = models.IntegerField()
     phone = models.BigIntegerField()
     hlr_status = models.CharField(max_length=100)
