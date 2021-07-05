@@ -11,10 +11,10 @@ def send_hlr(phone):
         url = f"http://smspilot.ru/api.php?send={text}&to={phone}&apikey={apikey}&format=json"
         j = json.loads(urllib.request.urlopen(url).read())
         count = 0
-        while j.get('send') is not None and j.get('send')[0] is not None and j.get('send')[0].get('server_id') \
+        while j.get('send') is None or j.get('send')[0] is None or j.get('send')[0].get('server_id') is None \
                 and count < 20:
-            j = json.loads(urllib.request.urlopen(url).read())
             time.sleep(3)
+            j = json.loads(urllib.request.urlopen(url).read())
             count = count + 1
         server_id = j['send'][0]['server_id']
         return server_id
@@ -27,10 +27,10 @@ def get_hlr_result(server_id):
         url = f"https://smspilot.ru/api.php?check={server_id}&apikey={apikey}&format=json"
         j = json.loads(urllib.request.urlopen(url).read())
         count = 0
-        while j.get('check') is not None and j.get('check')[0] is not None and j.get('check')[0].get('status') \
-                and (j.get('check')[0].get('status') == 0 or j.get('check')[0].get('status') == 1) and count < 20:
-            j = json.loads(urllib.request.urlopen(url).read())
+        while j.get('check') is None or j.get('check')[0] is None or j.get('check')[0].get('status') is None\
+                or (j.get('check')[0].get('status') == 0 and j.get('check')[0].get('status') == 1) and count < 20:
             time.sleep(3)
+            j = json.loads(urllib.request.urlopen(url).read())
             count = count + 1
         status = int(j['check'][0]['status'])
         # while status == 0 or status == 1:
