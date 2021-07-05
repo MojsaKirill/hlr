@@ -70,7 +70,7 @@ class AcceptView(LoginRequiredMixin, View):
         requests = Requests.objects.create(user_id=user_id)
         for phone in phones:
             Request.objects.create(requests_id=requests.id, phone=phone, hlr_status="Обрабатывается",
-                                   hlr_status_code=None)
+                                   hlr_status_code=5)
         t = threading.Thread(target=worker, args=(requests.id, ))
         t.start()
         return render(request, self.result_template,
