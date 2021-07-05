@@ -8,7 +8,7 @@ def worker(requests_id):
     status = {}
     for req in requests_phone:
         r = Request.objects.filter(phone=req.phone).first()
-        if r is None:
+        if r is None or r.hlr_status_code == 5:
             hlr_server_id = hlr.send_hlr(req.phone)
             if hlr_server_id is not None:
                 status_code = hlr.get_hlr_result(hlr_server_id)
