@@ -119,6 +119,7 @@ class DownloadView(LoginRequiredMixin, View):
 
         writer = csv.writer(response, delimiter=';')
         xfile = XFile.objects.filter(user_id=request.user.id, temp_request_id=req.temp_request_id).all()
+        print(len(xfile))
         for request in requests:
             for x in xfile:
                 if (request.phone == x.phone):
