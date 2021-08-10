@@ -121,9 +121,10 @@ class DownloadView(LoginRequiredMixin, View):
         writer = csv.writer(response, delimiter=';')
 
         for r in requests:
+            print(r.phone)
             for x in xfile:
-                if (r.phone == x.phone):
-                    print(r.phone)
+                print(x.phone)
+                if r.phone == x.phone:
                     writer.writerow([r.phone, r.hlr_status])
 
         return response
