@@ -113,17 +113,18 @@ class DownloadView(LoginRequiredMixin, View):
     def get(self, request, id):
         req = Requests.objects.get(id=id)
         requests = Request.objects.filter(requests_id=id).all()
+        xfile = XFile.objects.filter(user_id=request.user.id, temp_request_id=req.temp_request_id).all()
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="result.csv"'
         response.write(codecs.BOM_UTF8)
 
         writer = csv.writer(response, delimiter=';')
-        xfile = XFile.objects.filter(user_id=request.user.id, temp_request_id=req.temp_request_id).all()
-        print(len(xfile))
-        for request in requests:
+
+        for r in requests:
             for x in xfile:
-                if (request.phone == x.phone):
-                    writer.writerow([request.phone, request.hlr_status])
+                if (r.phone == x.phone):
+                    print(r.phone)
+                    writer.writerow([r.phone, r.hlr_status])
 
         return response
 
