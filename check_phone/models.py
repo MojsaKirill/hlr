@@ -16,6 +16,7 @@ class User(AbstractUser):
 
 class Requests(models.Model):
     user_id = models.IntegerField()
+    temp_request_id = models.IntegerField(null=True)
     request_date = models.DateTimeField(default=datetime.now())
 
 
@@ -44,3 +45,13 @@ class Price(models.Model):
 
     def __str__(self):
         return str(self.default_price)
+
+
+class XFile(models.Model):
+    user_id = models.IntegerField()
+    temp_request_id = models.IntegerField(null=True)
+    phone = models.TextField()
+    line = models.BinaryField()
+
+    def __str__(self):
+        return str(self.line)

@@ -2,7 +2,6 @@
 import codecs
 import csv
 import threading
-import time
 
 from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -11,10 +10,9 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 from django.views import View
 
-import check_phone.hlr_api as hlr
 from check_phone.file_reader import get_values
 from check_phone.hlr_theard import worker
-from check_phone.models import Request, Requests, TempRequest, Price, User
+from check_phone.models import Request, Requests, TempRequest, Price, User, XFile
 
 
 class HLRRes:
@@ -39,7 +37,7 @@ class PhoneView(LoginRequiredMixin, View):
         if not request.FILES:
             return redirect('/')
         file = request.FILES['file'].file
-        phones = get_values(file)
+        phones, lines = get_values(file)
         user_price = user.sale_price
         if user_price == 0:
             price = Price.objects.first()
@@ -48,6 +46,12 @@ class PhoneView(LoginRequiredMixin, View):
         tr = TempRequest(user_id=user.id, price=price)
         tr.set_phones(phones)
         tr.save()
+
+        XFile.objects.first(user_id=user.id).delete()
+        for key in lines:
+            x = XFile(user_id=user.id, temp_request_id=tr.id, line=lines[key], phones=key)
+            x.save()
+
         return render(request, self.result_template, {"tempRequest": tr, "user_b": user.balance})
 
 
@@ -66,11 +70,11 @@ class AcceptView(LoginRequiredMixin, View):
         User.objects.filter(id=user.id).update(balance=user.balance)
         phones = temp_req.get_phones()
         user_id = request.user.id
-        requests = Requests.objects.create(user_id=user_id)
+        requests = Requests.objects.create(user_id=user_id, temp_request_id=temp_req.id)
         for phone in phones:
             Request.objects.create(requests_id=requests.id, phone=phone, hlr_status="Обрабатывается",
                                    hlr_status_code=5)
-        t = threading.Thread(target=worker, args=(requests.id, ))
+        t = threading.Thread(target=worker, args=(requests.id,))
         t.start()
         return redirect(f'/request/{requests.id}')
 
@@ -107,15 +111,18 @@ class RequestsView(LoginRequiredMixin, View):
 
 class DownloadView(LoginRequiredMixin, View):
     def get(self, request, id):
+        req = Requests.objects.get(id=id)
         requests = Request.objects.filter(requests_id=id).all()
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="result.csv"'
         response.write(codecs.BOM_UTF8)
 
         writer = csv.writer(response, delimiter=';')
-
+        xfile = XFile.objects.filter(user_id=request.user.id, temp_request_id=req.temp_request_id).all()
         for request in requests:
-            writer.writerow([request.phone, request.hlr_status])
+            for x in xfile:
+                if (request.phone == xfile.phone):
+                    writer.writerow([request.phone, xfile.line, request.hlr_status])
 
         return response
 
@@ -127,4 +134,5 @@ class RequestView(LoginRequiredMixin, View):
     def get(self, request, id):
         user = request.user
         return render(request, self.result_template,
-                      {"result": Request.objects.filter(requests_id=id).all().order_by('id'), "user_b": user.balance, "r_id": id})
+                      {"result": Request.objects.filter(requests_id=id).all().order_by('id'), "user_b": user.balance,
+                       "r_id": id})
