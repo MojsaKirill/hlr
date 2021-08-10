@@ -122,8 +122,7 @@ class DownloadView(LoginRequiredMixin, View):
 
         for r in requests:
             for x in xfile:
-                print(str(r.phone) + ' ' + str(x.phone) + ' ' + str(r.phone==x.phone))
-                if r.phone == x.phone:
+                if int(r.phone) == int(x.phone):
                     writer.writerow([r.phone, r.hlr_status])
 
         return response
