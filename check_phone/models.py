@@ -51,7 +51,7 @@ class XFile(models.Model):
     user_id = models.IntegerField()
     temp_request_id = models.IntegerField(null=True)
     phone = models.TextField()
-    line = models.BinaryField()
+    line = models.TextField()
 
     def __str__(self):
         return str(self.line)
