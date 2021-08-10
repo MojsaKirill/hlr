@@ -49,7 +49,7 @@ class PhoneView(LoginRequiredMixin, View):
 
         XFile.objects.filter(user_id=user.id).delete()
         for key in lines:
-            x = XFile(user_id=user.id, temp_request_id=tr.id, line=lines[key], phones=key)
+            x = XFile(user_id=user.id, temp_request_id=tr.id, line=lines[key], phone=key)
             x.save()
 
         return render(request, self.result_template, {"tempRequest": tr, "user_b": user.balance})
