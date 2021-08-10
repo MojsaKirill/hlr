@@ -47,7 +47,7 @@ class PhoneView(LoginRequiredMixin, View):
         tr.set_phones(phones)
         tr.save()
 
-        XFile.objects.first(user_id=user.id).delete()
+        XFile.objects.filter(user_id=user.id).delete()
         for key in lines:
             x = XFile(user_id=user.id, temp_request_id=tr.id, line=lines[key], phones=key)
             x.save()
