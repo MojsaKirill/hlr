@@ -121,7 +121,7 @@ class DownloadView(LoginRequiredMixin, View):
         xfile = XFile.objects.filter(user_id=request.user.id, temp_request_id=req.temp_request_id).all()
         for request in requests:
             for x in xfile:
-                if (request.phone == xfile.phone):
+                if (request.phone == x.phone):
                     writer.writerow([request.phone, xfile.line, request.hlr_status])
 
         return response
