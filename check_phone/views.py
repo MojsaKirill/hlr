@@ -123,7 +123,7 @@ class DownloadView(LoginRequiredMixin, View):
         for r in requests:
             for x in xfile:
                 if int(r.phone) == int(x.phone):
-                    writer.writerow([r.phone, r.hlr_status])
+                    writer.writerow([r.phone, x.line, r.hlr_status])
 
         return response
 
